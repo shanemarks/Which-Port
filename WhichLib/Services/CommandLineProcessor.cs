@@ -8,17 +8,17 @@ namespace WhichLib.Services;
 public static class CommandLineProcessor
 {
 
-    public static Result<Settings> OptionsToSettings(NonNullableString options, ImmutableArray<NonNullableString> files)
+    public static Result<Settings> OptionsToSettings(CommandOptions options, FileNamesToSearch filesToSearch)
     {
         
-        if (!ValidateOption(options))
+        if (!ValidateOption(options.Value))
         {
             return Result<Settings>.Failure("which: bad option - todo print bad option");
         }
 
         bool all = options.ToString().Contains("a");
         bool silent = options.ToString().Contains("s");
-        return Result<Settings>.Success(new Settings(silent, all, files));
+        return Result<Settings>.Success(new Settings(silent, all, filesToSearch.Names));
     }
     public static bool ValidateOption(NonNullableString option)
     {

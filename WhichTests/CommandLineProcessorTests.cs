@@ -23,7 +23,9 @@ public class CommandLineProcessorTests
     public void ShouldGenerateSettingsFromOptions(string options,  bool expectedSilent, bool expectedAll, params string[] files)
     {
         var convertedStrings = files.Select((x) => new NonNullableString(x)).ToImmutableArray();
-        var settings = CommandLineProcessor.OptionsToSettings(new NonNullableString(options), convertedStrings);
+        var commandOptions = new CommandOptions(new NonNullableString(options));
+        var fileNamesToSearch = FileNamesToSearch.FromNonNullableStrings(convertedStrings);
+        var settings = CommandLineProcessor.OptionsToSettings(commandOptions, fileNamesToSearch);
       Assert.That(settings.Value.ListAll, Is.EqualTo(true));
       Assert.That(settings.Value.SilentMode, Is.EqualTo(false));
       for (int n = 0; n < files.Length; n++)
