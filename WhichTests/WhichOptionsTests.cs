@@ -50,9 +50,7 @@ public class WhichOptionsTests
         
         Assert.That(options.IsVerbose, Is.True);
     }
-
-    // Legacy constructor test removed - no longer supporting backward compatibility
-
+    
     [Test]
     public void ShouldWorkWithNewWhichOptionsConstructor()
     {
