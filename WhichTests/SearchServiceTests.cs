@@ -41,8 +41,9 @@ public class SearchServiceTests
         string path = "/usr/bin:/usr/anotherfolder";
         string[] files = new string[] { "ruby" };
         MockLogger m = new MockLogger();
-        SearchService.Search(m, path,new Settings(false,false,new NonNullableString[]{new NonNullableString("ruby")}.ToImmutableArray()), _mockFileSystem);
+        var exitCode = SearchService.Search(m, path,new Settings(false,false,new NonNullableString[]{new NonNullableString("ruby")}.ToImmutableArray()), _mockFileSystem);
         Assert.That(m.CallCount,Is.EqualTo(1));
+        Assert.That(exitCode, Is.EqualTo(0)); // Success exit code
         
     }
     [Test]
@@ -52,8 +53,43 @@ public class SearchServiceTests
         string path = "/usr/bin:/usr/anotherfolder";
         string[] files = new string[] { "ruby" };
         MockLogger m = new MockLogger();
-        SearchService.Search(m, path,new Settings(false,true,new NonNullableString[]{new NonNullableString("ruby")}.ToImmutableArray()), _mockFileSystem);
+        var exitCode = SearchService.Search(m, path,new Settings(false,true,new NonNullableString[]{new NonNullableString("ruby")}.ToImmutableArray()), _mockFileSystem);
         Assert.That(m.CallCount,Is.EqualTo(2));
+        Assert.That(exitCode, Is.EqualTo(0)); // Success exit code
         
+    }
+    
+    [Test]
+    public void ShouldRespectSilentMode()
+    {
+        string path = "/usr/bin:/usr/anotherfolder";
+        MockLogger m = new MockLogger();
+        var exitCode = SearchService.Search(m, path, new Settings(true, false, new NonNullableString[]{new NonNullableString("ruby")}.ToImmutableArray()), _mockFileSystem);
+        
+        // Silent mode should not log any output
+        Assert.That(m.CallCount, Is.EqualTo(0));
+        Assert.That(exitCode, Is.EqualTo(0)); // Still success, just silent
+    }
+    
+    [Test]
+    public void ShouldReturnFailureExitCodeWhenFileNotFound()
+    {
+        string path = "/usr/bin:/usr/anotherfolder";
+        MockLogger m = new MockLogger();
+        var exitCode = SearchService.Search(m, path, new Settings(false, false, new NonNullableString[]{new NonNullableString("nonexistent")}.ToImmutableArray()), _mockFileSystem);
+        
+        Assert.That(exitCode, Is.EqualTo(1)); // Failure exit code
+    }
+    
+    [Test]
+    public void ShouldReturnFailureExitCodeWhenFileNotFoundInSilentMode()
+    {
+        string path = "/usr/bin:/usr/anotherfolder";
+        MockLogger m = new MockLogger();
+        var exitCode = SearchService.Search(m, path, new Settings(true, false, new NonNullableString[]{new NonNullableString("nonexistent")}.ToImmutableArray()), _mockFileSystem);
+        
+        // Silent mode should not log errors
+        Assert.That(m.CallCount, Is.EqualTo(0));
+        Assert.That(exitCode, Is.EqualTo(1)); // Failure exit code
     }
 }

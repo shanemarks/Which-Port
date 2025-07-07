@@ -11,7 +11,7 @@ var parseResult = CommandLineParser.Parse(rawArgs);
 if (!parseResult.IsSuccessful)
 {
     Console.WriteLine(parseResult.Error);
-    return;
+    return 1;
 }
 
 // Convert to settings
@@ -22,7 +22,7 @@ var settingsResult = CommandLineProcessor.OptionsToSettings(
 if (!settingsResult.IsSuccessful)
 {
     Console.WriteLine(settingsResult.Error);
-    return;
+    return 1;
 }
 
 // Get PATH environment variable
@@ -30,9 +30,10 @@ var pathResult = EnvironmentService.GetSearchPath();
 if (!pathResult.IsSuccessful)
 {
     Console.WriteLine(pathResult.Error);
-    return;
+    return 1;
 }
 
 // Perform search
-SearchService.Search(new ConsoleLogger(), pathResult.Value, settingsResult.Value, new FileSystem());
+var exitCode = SearchService.Search(new ConsoleLogger(), pathResult.Value, settingsResult.Value, new FileSystem());
+return exitCode;
 
