@@ -17,9 +17,11 @@ public static class CommandLineProcessor
         }
         
 
-        bool all = options.ToString().Contains("a");
-        bool silent = options.ToString().Contains("s");
-        return Result<Settings>.Success(new Settings(silent, all, filesToSearch.Names));
+        var outputMode = options.ToString().Contains("s") ? OutputMode.Silent : OutputMode.Normal;
+        var searchMode = options.ToString().Contains("a") ? SearchMode.AllMatches : SearchMode.FirstMatch;
+        
+        var whichOptions = new WhichOptions(outputMode, searchMode, filesToSearch);
+        return Result<Settings>.Success(new Settings(whichOptions));
     }
     public readonly record struct OptionValidationResult(bool IsValid, char? InvalidCharacter);
     

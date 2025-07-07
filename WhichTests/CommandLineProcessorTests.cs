@@ -27,11 +27,11 @@ public class CommandLineProcessorTests
         var commandOptions = new CommandOptions(new NonNullableString(options));
         var fileNamesToSearch = FileNamesToSearch.FromNonNullableStrings(convertedStrings);
         var settings = CommandLineProcessor.OptionsToSettings(commandOptions, fileNamesToSearch);
-      Assert.That(settings.Value.ListAll, Is.EqualTo(true));
-      Assert.That(settings.Value.SilentMode, Is.EqualTo(false));
+      Assert.That(settings.Value.Options.Search, Is.EqualTo(SearchMode.AllMatches));
+      Assert.That(settings.Value.Options.Output, Is.EqualTo(OutputMode.Normal));
       for (int n = 0; n < files.Length; n++)
       {
-          Assert.That(settings.Value.Files[n].ToString(), Is.EqualTo(files[n]));
+          Assert.That(settings.Value.Options.FilesToSearch.Names[n].ToString(), Is.EqualTo(files[n]));
       }
 
     }

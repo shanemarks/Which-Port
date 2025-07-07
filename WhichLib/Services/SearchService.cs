@@ -14,12 +14,12 @@ public class SearchService
                     PathOperations.GetPaths(
                         new NonNullableString(pathToSearch)), 
                     fileSystem)
-            ,settings.Files, fileSystem);
+            ,settings.Options.FilesToSearch.Names, fileSystem);
 
             if (!result.IsSuccessful)
             {
                 // In silent mode, don't output errors to logger
-                if (!settings.SilentMode)
+                if (settings.Options.Output != OutputMode.Silent)
                 {
                     logger.Log(result.Error);
                 }
@@ -34,12 +34,12 @@ public class SearchService
                     foundAnyExecutables = true;
                     
                     // In silent mode, don't output the paths
-                    if (!settings.SilentMode)
+                    if (settings.Options.Output != OutputMode.Silent)
                     {
                         logger.Log(path.Value);
                     }
                     
-                    if (!settings.ListAll)
+                    if (settings.Options.Search == SearchMode.FirstMatch)
                     {
                         break;
                     }
