@@ -12,7 +12,8 @@ The first few commits were done by hand in a few hours, and then I use AI to ite
 I found that it generally stuck to the patterns and tests I started with, and that starting with tests made me confident in its changes.
 
 
-## Overview
+
+## Overview (AI Generated)
 
 This implementation provides the core functionality of the Unix `which` command with a focus on:
 - **Test-Driven Development**: Written using TDD principles
