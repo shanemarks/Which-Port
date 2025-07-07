@@ -10,7 +10,7 @@ ImmutableArray<NonNullableString> strings = System.Environment.GetCommandLineArg
 if (strings.Length == 0) return;
 
 //check for options
-NonNullableString options = strings[0].ToString().StartsWith("-") ? strings[0] : new NonNullableString("");
+NonNullableString options = strings[0].ToString().StartsWith("-") ? strings[0] : NonNullableString.CreateOrEmpty("");
 
 //get files
 ImmutableArray<NonNullableString> files = options.ToString().Equals(string.Empty)

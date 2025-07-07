@@ -11,8 +11,7 @@ public class CommandLineProcessorTests
     [TestCase("-sa", true)]
     [TestCase("-as", true)]
     [TestCase("-g", false)]
-    [TestCase("", true)]
-    [TestCase(null!, true)] //NonNullableString will auto cast this to an empty string
+    [TestCase("", true)] //Empty string is valid
 
 
     public void ShouldAcceptOnlyValidOptions(string option, bool expected)
