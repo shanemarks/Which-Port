@@ -10,30 +10,39 @@ public static class CommandLineProcessor
 
     public static Result<Settings> OptionsToSettings(CommandOptions options, FileNamesToSearch filesToSearch)
     {
-        
-        if (!ValidateOption(options.Value))
+        var validationResult = ValidateOption(options.Value);
+        if (!validationResult.IsValid)
         {
-            return Result<Settings>.Failure("which: bad option - todo print bad option");
+            return Result<Settings>.Failure($"which: illegal option -- {validationResult.InvalidCharacter}");
         }
+        
 
         bool all = options.ToString().Contains("a");
         bool silent = options.ToString().Contains("s");
         return Result<Settings>.Success(new Settings(silent, all, filesToSearch.Names));
     }
-    public static bool ValidateOption(NonNullableString option)
+    public readonly record struct OptionValidationResult(bool IsValid, char? InvalidCharacter);
+    
+    public static OptionValidationResult ValidateOption(NonNullableString option)
     {
         string opt = option.ToString();
         if (opt == string.Empty) // this is a valid option.
         {
-            return true;
+            return new OptionValidationResult(true, null);
         }
         if (opt.StartsWith("-"))
         {
-            Regex regex = new Regex(@"^(a|s|as|sa)*$");
-            return  regex.IsMatch(opt.Substring(1)); 
+            var optionChars = opt.Substring(1);
+            foreach (char c in optionChars)
+            {
+                if (c != 'a' && c != 's')
+                {
+                    return new OptionValidationResult(false, c);
+                }
+            }
+            return new OptionValidationResult(true, null);
         }
 
-        return false;
-
+        return new OptionValidationResult(false, null);
     }
 }

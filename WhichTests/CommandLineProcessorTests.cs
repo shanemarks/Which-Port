@@ -16,7 +16,8 @@ public class CommandLineProcessorTests
 
     public void ShouldAcceptOnlyValidOptions(string option, bool expected)
     {
-        Assert.That(CommandLineProcessor.ValidateOption(new NonNullableString(option)), Is.EqualTo(expected));
+        var result = CommandLineProcessor.ValidateOption(new NonNullableString(option));
+        Assert.That(result.IsValid, Is.EqualTo(expected));
         
     }
     [TestCase ("-a", false, true,"python","ruby")]
@@ -33,5 +34,26 @@ public class CommandLineProcessorTests
           Assert.That(settings.Value.Files[n].ToString(), Is.EqualTo(files[n]));
       }
 
+    }
+    
+    [TestCase("-x", 'x')]
+    [TestCase("-axb", 'x')]
+    [TestCase("-sxy", 'x')]
+    public void ShouldReportFirstInvalidCharacter(string option, char expectedInvalidChar)
+    {
+        var result = CommandLineProcessor.ValidateOption(new NonNullableString(option));
+        Assert.That(result.IsValid, Is.False);
+        Assert.That(result.InvalidCharacter, Is.EqualTo(expectedInvalidChar));
+    }
+    
+    [Test]
+    public void ShouldGenerateProperErrorMessageForInvalidOption()
+    {
+        var commandOptions = new CommandOptions(new NonNullableString("-x"));
+        var fileNamesToSearch = FileNamesToSearch.FromStrings(new[] { "ruby" });
+        var result = CommandLineProcessor.OptionsToSettings(commandOptions, fileNamesToSearch);
+        
+        Assert.That(result.IsSuccessful, Is.False);
+        Assert.That(result.Error, Is.EqualTo("which: illegal option -- x"));
     }
 }
