@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
+using WhichLib.Data;
 using WhichLib.Services;
 
 namespace WhichTests;
@@ -37,8 +38,8 @@ public class PathOperationTests
     public void WhenSinglePathReturnSinglePath(string path)
     {
         var result = PathOperations.GetPaths(new NonNullableString(path));
-        Assert.That(result.Value.Length, Is.EqualTo(1));
-        Assert.That(result.Value[0].ToString(), Is.EqualTo("~/test"));
+        Assert.That(result.Value.Count, Is.EqualTo(1));
+        Assert.That(result.Value.Paths[0].ToString(), Is.EqualTo("~/test"));
     }
 
     [TestCase("~/test:/Foo")]
@@ -47,9 +48,9 @@ public class PathOperationTests
     public void WhenMultiplePathsReturnValidPaths(string path)
     {
         var result = PathOperations.GetPaths(new NonNullableString(path));
-        Assert.That(result.Value.Length, Is.EqualTo(2));
-        Assert.That(result.Value[0].ToString(), Is.EqualTo("~/test"));
-        Assert.That(result.Value[1].ToString(), Is.EqualTo("/Foo"));
+        Assert.That(result.Value.Count, Is.EqualTo(2));
+        Assert.That(result.Value.Paths[0].ToString(), Is.EqualTo("~/test"));
+        Assert.That(result.Value.Paths[1].ToString(), Is.EqualTo("/Foo"));
 
     }
     
@@ -58,9 +59,9 @@ public class PathOperationTests
     public void WhenCheckDirectoriesOnlyReturnExisting(string path)
     {
         var result = PathOperations.FilterExistingPaths(PathOperations.GetPaths(new NonNullableString(path)), _mockFileSystem);
-        Assert.That(result.Value.Length, Is.EqualTo(2));
-        Assert.That(result.Value[0].ToString(), Is.EqualTo("~/test"));
-        Assert.That(result.Value[1].ToString(), Is.EqualTo("/usr/bin"));
+        Assert.That(result.Value.Count, Is.EqualTo(2));
+        Assert.That(result.Value.Paths[0].ToString(), Is.EqualTo("~/test"));
+        Assert.That(result.Value.Paths[1].ToString(), Is.EqualTo("/usr/bin"));
 
     }
     [TestCase("")]
@@ -78,7 +79,7 @@ public class PathOperationTests
         var result = PathOperations.FindFile(PathOperations.FilterExistingPaths(PathOperations.GetPaths(new NonNullableString(path)), _mockFileSystem)
         ,new NonNullableString(filename), _mockFileSystem);
         Assert.That(result.IsSuccessful,Is.EqualTo(true));
-        Assert.That(result.Value[0].ToString(),Is.EqualTo("/usr/bin/ruby"));
+        Assert.That(result.Value.Files[0].ToString(),Is.EqualTo("/usr/bin/ruby"));
     }
     
     [TestCase("~/test:/usr/bin:/invalid","sdfsd")]
@@ -107,11 +108,12 @@ public class PathOperationTests
         var result = PathOperations.FindFiles(PathOperations.FilterExistingPaths(PathOperations.GetPaths(new NonNullableString(path)), _mockFileSystem)
             ,files.Select(x=>new NonNullableString(x)).ToImmutableArray(), _mockFileSystem);
         Assert.That(result.IsSuccessful,Is.EqualTo(true));
-        Assert.That(result.Value[0].Length,Is.EqualTo(2));
-        Assert.That(result.Value[0][0].ToString(),Is.EqualTo("/usr/bin/ruby"));
-        Assert.That(result.Value[0][1].ToString(),Is.EqualTo("/usr/anotherfolder/ruby"));
+        Assert.That(result.Value.Matches.Length,Is.EqualTo(2));
+        Assert.That(result.Value.Matches[0].FoundPaths.Length,Is.EqualTo(2));
+        Assert.That(result.Value.Matches[0].FoundPaths[0].Value,Is.EqualTo("/usr/bin/ruby"));
+        Assert.That(result.Value.Matches[0].FoundPaths[1].Value,Is.EqualTo("/usr/anotherfolder/ruby"));
 
-        Assert.That(result.Value[1][0].ToString(),Is.EqualTo("~/test/python"));
+        Assert.That(result.Value.Matches[1].FoundPaths[0].Value,Is.EqualTo("~/test/python"));
 
     }
 }

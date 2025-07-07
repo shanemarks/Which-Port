@@ -1,3 +1,4 @@
+
 using System.IO.Abstractions;
 using WhichLib.Data;
 using WhichLib.Interfaces;
@@ -21,17 +22,14 @@ public class SearchService
                 return;
             }
 
-            foreach (var files in result.Value)
+            foreach (var match in result.Value.Matches)
             {
-                if (!files.IsDefaultOrEmpty)
+                foreach (var path in match.FoundPaths)
                 {
-                    foreach (var file in files)
+                    logger.Log(path.Value);
+                    if (!settings.ListAll)
                     {
-                        logger.Log(file.ToString());
-                        if (!settings.ListAll)
-                        {
-                            break;
-                        }
+                        break;
                     }
                 }
             }

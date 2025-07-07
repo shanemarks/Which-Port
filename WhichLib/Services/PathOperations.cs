@@ -8,57 +8,58 @@ namespace WhichLib.Services;
 public static class PathOperations
 {
 
-    public static Result<ImmutableArray<ImmutableArray<NonNullableString>>> FindFiles(Result<ImmutableArray<NonNullableString>> paths,
+    public static Result<SearchResults> FindFiles(Result<PathCollection> paths,
         ImmutableArray<NonNullableString> files, IFileSystem fileSystem)
     {
         if (!paths.IsSuccessful)
         {
-            return Result<ImmutableArray<ImmutableArray<NonNullableString>>>.Failure(paths.Error);
+            return Result<SearchResults>.Failure(paths.Error);
         }
         
-        List<ImmutableArray<NonNullableString>> foundFiles = new   List<ImmutableArray<NonNullableString>>();
+        List<SearchMatch> foundFiles = new List<SearchMatch>();
         foreach (var file in files)
         {
             var result = FindFile(paths, file, fileSystem);
             if (result.IsSuccessful)
             {
-                foundFiles.Add(result.Value);   
+                var executablePaths = result.Value.Files.Select(filePath => new ExecutablePath(filePath.ToString())).ToImmutableArray();
+                foundFiles.Add(new SearchMatch(file.ToString(), executablePaths));
             }
         }
         
         if (foundFiles.Count == 0)
         {
-            return Result<ImmutableArray<ImmutableArray<NonNullableString>>>.Failure("could not find file");
+            return Result<SearchResults>.Failure("could not find file");
         }
         
-        return Result<ImmutableArray<ImmutableArray<NonNullableString>>>.Success(foundFiles.ToImmutableArray());
+        return Result<SearchResults>.Success(new SearchResults(foundFiles.ToImmutableArray()));
 
     }
-    public static Result<ImmutableArray<NonNullableString>>FindFile(Result<ImmutableArray<NonNullableString>> paths, NonNullableString file, IFileSystem fileSystem)
+    public static Result<FileCollection> FindFile(Result<PathCollection> paths, NonNullableString file, IFileSystem fileSystem)
     {
         
         if (!paths.IsSuccessful)
         {
-            return Result<ImmutableArray<NonNullableString>>.Failure(paths.Error);
+            return Result<FileCollection>.Failure(paths.Error);
         }
 
-        List<NonNullableString> results = new List<NonNullableString>();
-        foreach (var s in paths.Value)
+        List<FilePath> results = new List<FilePath>();
+        foreach (var directoryPath in paths.Value.Paths)
         {
-            string fullpath = fileSystem.Path.Combine(s.ToString(),file.ToString());
+            string fullpath = fileSystem.Path.Combine(directoryPath.ToString(), file.ToString());
             if (fileSystem.File.Exists(fullpath))
             {
-                results.Add(new NonNullableString(fullpath));
+                results.Add(new FilePath(new NonNullableString(fullpath)));
             }
         }
 
         if (results.Count > 0)
         {
-            return Result<ImmutableArray<NonNullableString>>.Success(results.ToImmutableArray());
+            return Result<FileCollection>.Success(new FileCollection(results.ToImmutableArray()));
         }
-        return Result<ImmutableArray<NonNullableString>>.Failure("could not find file");
+        return Result<FileCollection>.Failure("could not find file");
     }
-    public static Result<ImmutableArray<NonNullableString>> FilterExistingPaths(Result<ImmutableArray<NonNullableString>> paths,
+    public static Result<PathCollection> FilterExistingPaths(Result<PathCollection> paths,
         IFileSystem fileSystem)
     {
         //don't do anything if input is invalid
@@ -66,10 +67,10 @@ public static class PathOperations
         {
             return paths;
         }
-        var filtered = paths.Value.Where(x => fileSystem.Directory.Exists(x.ToString())).ToImmutableArray();
-        return Result<ImmutableArray<NonNullableString>>.Success(filtered);
+        var filtered = paths.Value.Paths.Where(x => fileSystem.Directory.Exists(x.ToString())).ToImmutableArray();
+        return Result<PathCollection>.Success(new PathCollection(filtered));
     }
-    public static Result<ImmutableArray<NonNullableString>> GetPaths(NonNullableString semicolonSeparatedPaths)
+    public static Result<PathCollection> GetPaths(NonNullableString semicolonSeparatedPaths)
     {
         string[] results = semicolonSeparatedPaths.ToString().Split(":");
         var validPaths = results.Where(x =>
@@ -84,12 +85,13 @@ public static class PathOperations
             {
                 return false;
             }
-        }).Select((x => new NonNullableString(x))).ToImmutableArray();
+        }).ToArray();
 
         if (validPaths.Length == 0)
         {
-            return Result<ImmutableArray<NonNullableString>>.Failure("No Paths Specified");
+            return Result<PathCollection>.Failure("No Paths Specified");
         }
-        return Result<ImmutableArray<NonNullableString>>.Success(validPaths);
+        
+        return Result<PathCollection>.Success(PathCollection.FromStrings(validPaths));
     }
 }
