@@ -2,7 +2,7 @@
 
 A C# port of the Unix `which` command for .NET 9 - an academic exercise in Test-Driven Development (TDD) and null-safe programming.
 
-This code is probably over-engineered in a few weird ways it it was done to explore some new concepts and learn something new specifically:
+This code is probably over-engineered in a few weird ways as it was done to explore some interesting concepts, specifically:
 - How to write null-safe code (by avoiding nulls)
 - How to mock file systems in c#
 - How to use the result and immutable patterns found in functional programming
